@@ -11,8 +11,9 @@ import {
   RelayerAccount,
 } from '@generationsoftware/pt-v5-autotasks-library';
 
+const RETRY_LIMIT = 50;  // Number of times to retry
 
-const main = async () =>{
+const main = async () => {
   const envVars: PrizeClaimerEnvVars = loadPrizeClaimerEnvVars();
   const provider: BaseProvider = getProvider(envVars);
 
@@ -33,7 +34,23 @@ const main = async () =>{
   };
 
   const contracts: ContractsBlob = await downloadContractsBlob(config.contractJsonUrl, nodeFetch);
-  await runPrizeClaimer(contracts, config);
+
+  let attempts = 0;
+  let success = false;
+
+  while (attempts < RETRY_LIMIT && !success) {
+    try {
+      await runPrizeClaimer(contracts, config);
+      success = true;
+    } catch (error) {
+      attempts++;
+      console.error(`Attempt ${attempts} failed: ${error.message}`);
+      if (attempts >= RETRY_LIMIT) {
+        console.error('All retry attempts failed.');
+        throw error;
+      }
+    }
+  }
 }
 
-main() 
+main()
