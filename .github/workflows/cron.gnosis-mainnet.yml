@@ -1,7 +1,7 @@
 name: CronJob - Prize Claimer Bot - Gnosis
 on:
   schedule:
-    - cron: "*/20 * * * *" # ie. 4:20pm, 4:40pm, 5:00pm ... etc.
+    - cron: "*/5 * * * *" 
   push:
 env:
   CHAIN_ID: 100
