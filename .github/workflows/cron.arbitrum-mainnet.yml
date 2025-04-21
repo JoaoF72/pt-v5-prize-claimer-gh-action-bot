@@ -1,11 +1,11 @@
 name: CronJob - Prize Claimer Bot - Arbitrum
 on:
   schedule:
-    - cron: "*/20 * * * *" # ie. 4:20pm, 4:40pm, 5:00pm ... etc.
+    - cron: "*/5 * * * *" # ie. 4:20pm, 4:40pm, 5:00pm ... etc.
   push:
 env:
   CHAIN_ID: 42161
-  MIN_PROFIT_THRESHOLD_USD: 0.01
+  MIN_PROFIT_THRESHOLD_USD: -0.01
   REWARD_RECIPIENT: ''
   JSON_RPC_URL: ${{ secrets.ARBITRUM_MAINNET_JSON_RPC_URL }}
   COVALENT_API_KEY: ${{ secrets.COVALENT_API_KEY }}
