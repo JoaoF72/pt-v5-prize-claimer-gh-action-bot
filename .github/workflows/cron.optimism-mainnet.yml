@@ -1,9 +1,11 @@
+# .github/workflows/cron.optimism-mainnet.yml
+
 name: CronJob – Prize Claimer Bot – Optimism
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
-  workflow_dispatch:
+    - cron: '*/5 * * * *'    # executa de 5 em 5 minutos
+  workflow_dispatch:        # permite disparar manualmente via "Run workflow"
 
 permissions: write-all
 
@@ -17,19 +19,17 @@ jobs:
         node: ["20.11.1"]
         os: [ubuntu-latest]
 
-    # ─────── Aqui em baixo, o bloco env no nível do job ───────────────────
+    # ─────────── Variáveis de ambiente no nível do job ────────────
     env:
       JSON_RPC_URL: ${{ secrets.JSON_RPC_URL }}
       CUSTOM_RELAYER_PRIVATE_KEY: ${{ secrets.CUSTOM_RELAYER_PRIVATE_KEY }}
       CONTRACT_JSON_URL: 'https://raw.githubusercontent.com/GenerationSoftware/pt-v5-mainnet/396f04daedc5a38935460ddf47d2f10e9ac1fec6/deployments/optimism/contracts.json'
-      # podes remover estes se não usares:
-      COVALENT_API_KEY: ''
-      SUBGRAPH_URL: ''
+      SUBGRAPH_URL: 'https://api.goldsky.com/api/public/project_cm3xb1e8iup5601yx9mt5caat/subgraphs/pt-v5-optimism/v0.0.4/gn'
       CHAIN_ID: 10
       MIN_PROFIT_THRESHOLD_USD: -0.01
       REWARD_RECIPIENT: ''
       NODE_OPTIONS: "--max_old_space_size=32768"
-    # ──────────────────────────────────────────────────────────────────────
+    # ────────────────────────────────────────────────────────────────
 
     steps:
       - name: Checkout repo
@@ -50,11 +50,12 @@ jobs:
         id: time
         run: echo "time=$(date +'%H-%M-%S_%Z')" >> "$GITHUB_ENV"
 
-      - name: Run bot
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Prize Claimer Bot
         id: runBot
-        run: |
-          npm install
-          npx tsx index.ts
+        run: npx tsx index.ts
 
       - name: Push changes (if required)
         uses: ad-m/github-push-action@master
@@ -63,15 +64,13 @@ jobs:
           branch: ${{ github.ref }}
           force: true
 
-      - name: Comment Error
-        id: commentError
-        if: steps.runBot.outputs.exitcode == 1
+      - name: Comment on error
+        if: steps.runBot.outcome == 'failure'
         uses: actions/github-script@v5
-        continue-on-error: true
         with:
           script: |
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Prize Claimer bot failed for run at "$date"__"$time": Exit Code 1`
+              title: `Prize Claimer bot failed at ${process.env.date}_${process.env.time}`
             })
