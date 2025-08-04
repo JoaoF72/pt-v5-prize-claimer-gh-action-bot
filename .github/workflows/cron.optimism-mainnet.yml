@@ -5,18 +5,8 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
-  push:
-env:
-  CHAIN_ID: 10
-  MIN_PROFIT_THRESHOLD_USD: -0.01
-  REWARD_RECIPIENT: ''
-  JSON_RPC_URL: ${{ secrets.OPTIMISM_MAINNET_JSON_RPC_URL }}
-  COVALENT_API_KEY: ${{ secrets.COVALENT_API_KEY }}
-  CUSTOM_RELAYER_PRIVATE_KEY: ${{ secrets.CUSTOM_RELAYER_PRIVATE_KEY }}
-  CONTRACT_JSON_URL: 'https://raw.githubusercontent.com/GenerationSoftware/pt-v5-mainnet/396f04daedc5a38935460ddf47d2f10e9ac1fec6/deployments/optimism/contracts.json'
-  SUBGRAPH_URL: 'https://api.goldsky.com/api/public/project_cm3xb1e8iup5601yx9mt5caat/subgraphs/pt-v5-optimism/v0.0.4/gn'
-  NODE_OPTIONS: "--max_old_space_size=32768"
 permissions: write-all
+
 jobs:
   runCLI:
     name: Prize Claimer Bot
@@ -26,12 +16,27 @@ jobs:
       matrix:
         node: ["20.11.1"]
         os: [ubuntu-latest]
+
+    # ─────── Aqui em baixo, o bloco env no nível do job ───────────────────
+    env:
+      JSON_RPC_URL: ${{ secrets.JSON_RPC_URL }}
+      CUSTOM_RELAYER_PRIVATE_KEY: ${{ secrets.CUSTOM_RELAYER_PRIVATE_KEY }}
+      CONTRACT_JSON_URL: 'https://raw.githubusercontent.com/GenerationSoftware/pt-v5-mainnet/396f04daedc5a38935460ddf47d2f10e9ac1fec6/deployments/optimism/contracts.json'
+      # podes remover estes se não usares:
+      COVALENT_API_KEY: ''
+      SUBGRAPH_URL: ''
+      CHAIN_ID: 10
+      MIN_PROFIT_THRESHOLD_USD: -0.01
+      REWARD_RECIPIENT: ''
+      NODE_OPTIONS: "--max_old_space_size=32768"
+    # ──────────────────────────────────────────────────────────────────────
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
+
       - name: Use Node ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
@@ -40,7 +45,7 @@ jobs:
       - name: Store current date
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_ENV"
-      
+
       - name: Store current time
         id: time
         run: echo "time=$(date +'%H-%M-%S_%Z')" >> "$GITHUB_ENV"
