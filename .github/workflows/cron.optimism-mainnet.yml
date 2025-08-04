@@ -1,8 +1,10 @@
-name: CronJob - Prize Claimer Bot - Optimism
+name: CronJob – Prize Claimer Bot – Optimism
+
 on:
   schedule:
-    - cron: "*/5 * * * *" # ie. 4:20pm, 4:40pm, 5:00pm ... etc.
-    workflow_dispatch:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
   push:
 env:
   CHAIN_ID: 10
